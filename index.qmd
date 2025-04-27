@@ -1,7 +1,7 @@
 ---
 title: "Self-reported life satisfaction, 2011 to 2023"
 subtitle: "Replicating the Our World in Data Grapher"
-author: "YOUR NAME HERE" # Remember to add your name!
+author: "ENOCH" 
 theme: united
 ---
 
@@ -45,7 +45,10 @@ The main life evaluation question asked in the poll is the Cantril Life Ladder q
 > “Please imagine a ladder, with steps numbered from 0 at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time?”
 
 
-## 🔢 Table
+:::{.panel-tabset}
+
+## 🔢 Table 
+
 
 **Average self-reported life satisfaction** – Cantril Ladder score (0=worst; 10=best)
 
@@ -63,7 +66,18 @@ The main life evaluation question asked in the poll is the Cantril Life Ladder q
 # 5. Also with `mutate`, you should round your numbers to appropriate decimal places.
 # 6. Then use scales::percent to format the Relative change as a percentage.
 # 7. Use the `reactable` function to create and output the table.
-"WRITE_YOUR_CODE_HERE"
+
+
+
+cantril_subset <- cantril %>% 
+  filter(Year %in% c("2011", "2023")) %>% 
+  pivot_wider(names_from = "Year",
+              values_from = `Cantril ladder score`) %>% 
+  mutate(
+    absolute_change = `2023` - `2011`,
+    relative_change = scales::percent((`2023` - `2011`) / `2011`, accuracy = 0.01))
+
+reactable(cantril_subset)
 ```
 
 
@@ -109,7 +123,24 @@ cantril %>%
 # 6. Use theme_minimal to set the theme.
 # 7. Finally, use ggplotly to convert the ggplot chart to a plotly chart
 
-"WRITE_YOUR_CODE_HERE"
+
+cantril_country <- cantril %>%
+  filter(Country == c("Ghana","South Africa","Kenya", "Nigeria", "Senegal","Rwanda"))
+
+cantril_country_plot <- ggplot(data=cantril_country,
+       aes(x=Year,
+           y=`Cantril ladder score`,
+           fill= Country,
+           colour = Country))+
+  geom_line()+
+  scale_y_continuous()+
+  labs(title = "Cantril ladder score over years")+
+  theme_minimal()
+
+  
+  
+ggplotly(cantril_country_plot)
+  
 # (When you're done with this section, don't forget to add tabsets, as mentioned in the instructions.)
 ```
 
@@ -166,14 +197,41 @@ function filter_default() {
 window.onload = filter_default;
 </script>
 
+## 👌 Addup Plot
 
 ```{r}
 # OPTIONAL CHALLENGE SECTION:
 
 # Add a final tab with a single figure that shows the top 10 and bottom 10 countries by happiness score in 2023. Remember to add a ## header and include it in the tabsets
-# "WRITE_YOUR_CODE_HERE"
-```
 
+cantril_high <- cantril %>% 
+  filter(Year=="2023") %>% 
+  arrange(desc(`Cantril ladder score`)) %>% 
+  head(10)
+
+cantril_low <- cantril %>% 
+  filter(Year=="2023") %>% 
+  arrange(`Cantril ladder score`) %>% 
+  head(10)
+
+cantril_full <-  full_join(cantril_high,cantril_low)
+
+
+
+
+happy_plot <- ggplot(data = cantril_full,
+       aes(y = reorder(Country, `Cantril ladder score`),
+           x = `Cantril ladder score`,
+           fill = Country)) +
+  geom_col()+
+  labs(y="Country",
+       title = "Happiness levels in 2023",
+       subtitle = "The top ten happiest and least happiest countries")+
+  theme_minimal()
+
+ggplotly(happy_plot)
+```
+:::
 
 # {.unlisted}
 
